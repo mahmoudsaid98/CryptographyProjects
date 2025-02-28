@@ -1,0 +1,163 @@
+import string
+import tkinter as tk
+from tkinter import messagebox
+
+# Define the alphabet and mappings
+alphabet = string.ascii_uppercase
+letter_to_index = {letter: index for index, letter in enumerate(alphabet)}
+index_to_letter = {index: letter for index, letter in enumerate(alphabet)}
+
+# Function to encrypt using Caesar Cipher
+def caesar_encrypt(plaintext, shift):
+    ciphertext = ""
+    for letter in plaintext:
+        if letter in letter_to_index:
+            new_index = (letter_to_index[letter] + shift) % 26
+            ciphertext += index_to_letter[new_index]
+        else:
+            ciphertext += letter
+    return ciphertext
+
+# Function to decrypt using Caesar Cipher
+def caesar_decrypt(ciphertext, shift):
+    decrypted_text = ""
+    for letter in ciphertext:
+        if letter in letter_to_index:
+            new_index = (letter_to_index[letter] - shift + 26) % 26
+            decrypted_text += index_to_letter[new_index]
+        else:
+            decrypted_text += letter
+    return decrypted_text
+
+# Function to encrypt using Vigenère Cipher
+def vigenere_encrypt(plaintext, keyword):
+    keyword_repeated = (keyword * (len(plaintext) // len(keyword) + 1))[:len(plaintext)]
+    ciphertext = ""
+    for i in range(len(plaintext)):
+        if plaintext[i] in letter_to_index:
+            shift = letter_to_index[keyword_repeated[i]]
+            new_index = (letter_to_index[plaintext[i]] + shift) % 26
+            ciphertext += index_to_letter[new_index]
+        else:
+            ciphertext += plaintext[i]
+    return ciphertext
+
+# Function to decrypt using Vigenère Cipher
+def vigenere_decrypt(ciphertext, keyword):
+    keyword_repeated = (keyword * (len(ciphertext) // len(keyword) + 1))[:len(ciphertext)]
+    decrypted_text = ""
+    for i in range(len(ciphertext)):
+        if ciphertext[i] in letter_to_index:
+            shift = letter_to_index[keyword_repeated[i]]
+            new_index = (letter_to_index[ciphertext[i]] - shift + 26) % 26
+            decrypted_text += index_to_letter[new_index]
+        else:
+            decrypted_text += ciphertext[i]
+    return decrypted_text
+
+# GUI Application
+class CipherApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Cipher Application")
+        self.root.geometry("600x400")  # Set initial window size
+        self.root.configure(bg="#f0f0f0")  # Set background color
+
+        # Create frames
+        self.frame = tk.Frame(root, bg="#f0f0f0")
+        self.frame.pack(pady=20, padx=20, fill=tk.BOTH, expand=True)
+
+        # Encryption or Decryption
+        self.mode_label = tk.Label(self.frame, text="Choose Mode:", bg="#f0f0f0", font=("Arial", 12))
+        self.mode_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+        self.mode_var = tk.IntVar()
+        self.mode_var.set(1)
+        self.encrypt_radio = tk.Radiobutton(self.frame, text="Encrypt", variable=self.mode_var, value=1, bg="#f0f0f0", font=("Arial", 12))
+        self.encrypt_radio.grid(row=0, column=1, padx=10, pady=10, sticky="w")
+        self.decrypt_radio = tk.Radiobutton(self.frame, text="Decrypt", variable=self.mode_var, value=2, bg="#f0f0f0", font=("Arial", 12))
+        self.decrypt_radio.grid(row=0, column=2, padx=10, pady=10, sticky="w")
+
+        # Cipher Method
+        self.method_label = tk.Label(self.frame, text="Choose Cipher Method:", bg="#f0f0f0", font=("Arial", 12))
+        self.method_label.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+        self.method_var = tk.IntVar()
+        self.method_var.set(1)
+        self.caesar_radio = tk.Radiobutton(self.frame, text="Caesar Cipher", variable=self.method_var, value=1, bg="#f0f0f0", font=("Arial", 12))
+        self.caesar_radio.grid(row=1, column=1, padx=10, pady=10, sticky="w")
+        self.vigenere_radio = tk.Radiobutton(self.frame, text="Vigenère Cipher", variable=self.method_var, value=2, bg="#f0f0f0", font=("Arial", 12))
+        self.vigenere_radio.grid(row=1, column=2, padx=10, pady=10, sticky="w")
+
+        # Text Input
+        self.text_label = tk.Label(self.frame, text="Enter Text:", bg="#f0f0f0", font=("Arial", 12))
+        self.text_label.grid(row=2, column=0, padx=10, pady=10, sticky="w")
+        self.text_entry = tk.Entry(self.frame, width=50, font=("Arial", 12))
+        self.text_entry.grid(row=2, column=1, columnspan=2, padx=10, pady=10, sticky="ew")
+
+        # Shift/Keyword Input
+        self.key_label = tk.Label(self.frame, text="Enter Shift/Keyword:", bg="#f0f0f0", font=("Arial", 12))
+        self.key_label.grid(row=3, column=0, padx=10, pady=10, sticky="w")
+        self.key_entry = tk.Entry(self.frame, width=50, font=("Arial", 12))
+        self.key_entry.grid(row=3, column=1, columnspan=2, padx=10, pady=10, sticky="ew")
+
+        # Result Display
+        self.result_label = tk.Label(self.frame, text="Result:", bg="#f0f0f0", font=("Arial", 12))
+        self.result_label.grid(row=4, column=0, padx=10, pady=10, sticky="w")
+        self.result_text = tk.Text(self.frame, height=5, width=50, font=("Arial", 12))
+        self.result_text.grid(row=4, column=1, columnspan=2, padx=10, pady=10, sticky="ew")
+
+        # Buttons
+        self.button_frame = tk.Frame(self.frame, bg="#f0f0f0")
+        self.button_frame.grid(row=5, column=0, columnspan=3, padx=10, pady=20)
+
+        self.process_button = tk.Button(self.button_frame, text="Process", command=self.process, bg="#4CAF50", fg="white", font=("Arial", 12))
+        self.process_button.pack(side=tk.LEFT, padx=10)
+
+        self.reset_button = tk.Button(self.button_frame, text="Reset", command=self.reset, bg="#f44336", fg="white", font=("Arial", 12))
+        self.reset_button.pack(side=tk.LEFT, padx=10)
+
+    def process(self):
+        mode = self.mode_var.get()
+        method = self.method_var.get()
+        text = self.text_entry.get().upper()
+        key = self.key_entry.get().upper()
+
+        if not text:
+            messagebox.showwarning("Input Error", "Please enter some text.")
+            return
+
+        if method == 1 and not key.isdigit():
+            messagebox.showwarning("Input Error", "Shift value must be a number for Caesar Cipher.")
+            return
+
+        if method == 2 and not key.isalpha():
+            messagebox.showwarning("Input Error", "Keyword must be alphabetic for Vigenère Cipher.")
+            return
+
+        if mode == 1:  # Encrypt
+            if method == 1:  # Caesar Cipher
+                shift = int(key)
+                result = caesar_encrypt(text, shift)
+            else:  # Vigenère Cipher
+                result = vigenere_encrypt(text, key)
+        else:  # Decrypt
+            if method == 1:  # Caesar Cipher
+                shift = int(key)
+                result = caesar_decrypt(text, shift)
+            else:  # Vigenère Cipher
+                result = vigenere_decrypt(text, key)
+
+        self.result_text.delete(1.0, tk.END)
+        self.result_text.insert(tk.END, result)
+
+    def reset(self):
+        self.text_entry.delete(0, tk.END)
+        self.key_entry.delete(0, tk.END)
+        self.result_text.delete(1.0, tk.END)
+        self.mode_var.set(1)
+        self.method_var.set(1)
+
+# Run the application
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = CipherApp(root)
+    root.mainloop()
